@@ -1,0 +1,46 @@
+# ============================================================
+# .gitignore — Namma Space
+# ============================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# --- Virtual Environments ---
+venv/
+.venv/
+env/
+
+# --- IDEs & OS ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# --- Secrets (Never commit) ---
+.env
+*.key
+secrets.json
+
+# --- Temporary & Caches ---
+*.log
+.mypy_cache/
+.pytest_cache/
+
+# --- Large Model Checkpoints (downloaded separately) ---
+checkpoints/
+*.pt
+*.pth
+*.safetensors
+
+# --- Large Intermediate Caches ---
+data/
+outputs/
+

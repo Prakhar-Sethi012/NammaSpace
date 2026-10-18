@@ -1,0 +1,46 @@
+# ============================================================
+# SpatialScene3D — Local dependencies
+# ============================================================
+# These are the packages for the LOCAL tools: the interactive viewer,
+# the semantic-lifting / eval helpers, and the agentic QA layer.
+# The heavy GPU stages (COLMAP, gsplat, Grounding DINO + SAM2) install
+# their own pinned dependencies inside the Colab notebook.
+# ============================================================
+
+# --- Core ---
+numpy==1.26.4
+scipy==1.13.1
+Pillow==10.4.0
+scikit-image==0.24.0
+opencv-python-headless==4.10.0.84
+tqdm==4.66.4
+plyfile==1.0.3
+pandas==2.2.2
+
+# --- PyTorch (MPS-enabled, Apple Silicon) ---
+torch==2.4.1
+torchvision==0.19.1
+
+# --- 3D Viewer ---
+viser==0.2.3
+
+# --- CLIP (open-vocabulary text embeddings) ---
+git+https://github.com/openai/CLIP.git
+
+# --- Semantics / detection support (import-time deps) ---
+supervision==0.22.0
+transformers==4.44.2
+
+# --- Agentic QA layer (LLM reasoning; provider-agnostic OpenAI-compatible client) ---
+# Used by qa_supervisor.py. Optional at runtime: the deterministic gate works
+# without it; the LLM reasoning layer needs it plus an LLM_API_KEY.
+openai>=1.40.0
+
+# --- Dev quality ---
+pytest==8.3.2
+mypy==1.11.1
+black==24.8.0
+isort==5.13.2
+
+# --- Utilities ---
+matplotlib==3.9.2

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Namma Space — 3D Digital Twin & First-Person Web Roaming</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <!-- Crosshair for First-Person Navigation -->
+    <div id="crosshair">
+        <div class="dot"></div>
+        <div class="ring"></div>
+    </div>
+
+    <!-- Top Navigation & Brand Bar -->
+    <header id="top-bar">
+        <div class="brand">
+            <span class="logo-badge">3D</span>
+            <div class="title-group">
+                <h1>Namma Space <span class="tag">Techfest 2026-27</span></h1>
+                <p class="subtitle">Autonomous Indoor Spatial Twin Engine</p>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <div class="poi-selector-group">
+                <label for="poi-select">Navigate POI:</label>
+                <select id="poi-select">
+                    <option value="">-- Jump to Destination --</option>
+                    <option value="entrance">Main Entrance [0, 1.6, 6]</option>
+                    <option value="reception">Reception Counter [-3, 1.6, 2]</option>
+                    <option value="desk">Executive Workstation [3.2, 1.6, -1.5]</option>
+                    <option value="meeting">Meeting Area [-2.5, 1.6, -3]</option>
+                    <option value="lounge">Sofa Lounge [2.8, 1.6, 3.5]</option>
+                </select>
+            </div>
+
+            <button id="btn-load-custom" class="btn-secondary" title="Load custom .splat or .ply model">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Load Splat / PLY
+            </button>
+            <input type="file" id="file-input" accept=".splat,.ply" style="display: none;">
+
+            <button id="btn-lock" class="btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Enter Walkthrough (WASD)
+            </button>
+        </div>
+    </header>
+
+    <!-- Side Control Panel -->
+    <aside id="controls-panel">
+        <div class="panel-section">
+            <div class="section-header">
+                <h3>View Controls</h3>
+            </div>
+            
+            <div class="control-row">
+                <label>Camera Mode</label>
+                <div class="toggle-group" id="camera-mode-toggle">
+                    <button class="active" data-mode="fps">Walk (WASD)</button>
+                    <button data-mode="orbit">Orbit (Inspect)</button>
+                    <button data-mode="topdown">Top-Down</button>
+                </div>
+            </div>
+
+            <div class="control-row">
+                <label>Render Shading</label>
+                <div class="toggle-group" id="shading-mode-toggle">
+                    <button class="active" data-shading="rgb">Photoreal RGB</button>
+                    <button data-shading="semantic">Semantics</button>
+                    <button data-shading="depth">Depth</button>
+                </div>
+            </div>
+
+            <div class="control-row">
+                <label>Walking Speed</label>
+                <input type="range" id="speed-slider" min="1" max="15" value="5" step="0.5">
+                <span id="speed-val">5.0 m/s</span>
+            </div>
+
+            <div class="control-row">
+                <label>Collision & Floor Height</label>
+                <label class="switch">
+                    <input type="checkbox" id="collision-toggle" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <div class="section-header">
+                <h3>Identified POIs</h3>
+                <span class="badge" id="poi-count">5 Detected</span>
+            </div>
+            <ul class="poi-list" id="poi-list">
+                <li data-poi="entrance"><span class="color-dot" style="background: #3b82f6;"></span> Main Entrance</li>
+                <li data-poi="reception"><span class="color-dot" style="background: #10b981;"></span> Reception Counter</li>
+                <li data-poi="desk"><span class="color-dot" style="background: #f59e0b;"></span> Executive Desk</li>
+                <li data-poi="meeting"><span class="color-dot" style="background: #8b5cf6;"></span> Meeting Room A</li>
+                <li data-poi="lounge"><span class="color-dot" style="background: #ec4899;"></span> 3-Seater Sofa Lounge</li>
+            </ul>
+        </div>
+
+        <div class="panel-section telemetry-section">
+            <div class="section-header">
+                <h3>Spatial Telemetry</h3>
+            </div>
+            <div class="telemetry-grid">
+                <div class="tele-item">
+                    <span class="tele-label">FPS</span>
+                    <span class="tele-value" id="tele-fps">60</span>
+                </div>
+                <div class="tele-item">
+                    <span class="tele-label">Primitives</span>
+                    <span class="tele-value" id="tele-splats">484,707</span>
+                </div>
+                <div class="tele-item">
+                    <span class="tele-label">Position</span>
+                    <span class="tele-value" id="tele-pos">0.0, 1.6, 6.0</span>
+                </div>
+                <div class="tele-item">
+                    <span class="tele-label">Held-out PSNR</span>
+                    <span class="tele-value" style="color: #10b981;">28.93 dB</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Minimap Overlay -->
+    <div id="minimap-container">
+        <div class="minimap-header">
+            <span>2D FLOOR OVERVIEW</span>
+            <span class="rec-dot"></span>
+        </div>
+        <canvas id="minimap-canvas" width="160" height="160"></canvas>
+    </div>
+
+    <!-- On-Screen Instructions Overlay when Pointer Lock is not active -->
+    <div id="instructions-overlay">
+        <div class="instructions-card">
+            <div class="card-icon">🎮</div>
+            <h2>Interactive 3D Walkthrough</h2>
+            <p>Experience fluid first-person roaming in the reconstructed digital twin.</p>
+            
+            <div class="controls-guide">
+                <div class="guide-item"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> <span>Walk around the space</span></div>
+                <div class="guide-item"><kbd>Mouse</kbd> <span>Look around (360° pitch & yaw)</span></div>
+                <div class="guide-item"><kbd>Shift</kbd> <span>Sprint / Fast traversal</span></div>
+                <div class="guide-item"><kbd>Space</kbd> / <kbd>C</kbd> <span>Fly up / crouch</span></div>
+                <div class="guide-item"><kbd>Esc</kbd> <span>Unlock mouse cursor</span></div>
+            </div>
+
+            <button id="btn-start-roam" class="btn-start">Click to Enter Walkthrough</button>
+            <p class="drop-hint">💡 Drag & drop any <code>.splat</code> or <code>.ply</code> file directly into this window to visualize custom captures.</p>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Three.js from ESM / CDN -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module" src="viewer.js"></script>
+</body>
+</html>
+
