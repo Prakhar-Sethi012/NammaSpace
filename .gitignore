@@ -43,4 +43,6 @@ checkpoints/
 # --- Large Intermediate Caches ---
 data/
 outputs/
+sample_data/extracted_frames*/
+sample_data/raw_videos/*.mp4
 

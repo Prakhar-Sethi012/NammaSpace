@@ -66,8 +66,21 @@ def stage_extract(video_path, output_dir, fps=3):
     ]
     return run_cmd(cmd, cwd=SPATIAL_DIR)
 
+def stage_reconstruct(frames_dir, output_ply):
+    print_banner(f"Stage 2: Monocular 3D Reconstruction from {frames_dir}")
+    abs_frames = Path(frames_dir).resolve()
+    abs_ply = Path(output_ply).resolve()
+    
+    cmd = [
+        sys.executable,
+        str(PROJECT_ROOT / "scripts" / "local_reconstruct.py"),
+        "--frames_dir", str(abs_frames),
+        "--output_ply", str(abs_ply)
+    ]
+    return run_cmd(cmd, cwd=PROJECT_ROOT)
+
 def stage_convert(ply_path, splat_output):
-    print_banner("Stage 2: Convert PLY to .splat for Web Viewer")
+    print_banner(f"Stage 3: Convert PLY to .splat ({ply_path} -> {splat_output})")
     if not os.path.exists(ply_path):
         print(f"  [!] File not found: {ply_path}")
         return 1
@@ -81,7 +94,7 @@ def stage_convert(ply_path, splat_output):
     return run_cmd(cmd, cwd=PROJECT_ROOT)
 
 def stage_qa():
-    print_banner("Stage 3: Autonomous Agentic QA & Release Gate")
+    print_banner("Stage 4: Autonomous Agentic QA & Release Gate")
     metrics_dir = SPATIAL_DIR / "final_report_package v10.5" / "metrics"
     output_dir = SPATIAL_DIR / "final_report_package v10.5" / "qa"
     
@@ -94,7 +107,7 @@ def stage_qa():
     return run_cmd(cmd, cwd=SPATIAL_DIR)
 
 def stage_serve(port=8000, no_browser=False):
-    print_banner(f"Stage 4: Serving Zero-Install 3D Web Viewer on Port {port}")
+    print_banner(f"Stage 5: Serving Zero-Install 3D Web Viewer on Port {port}")
     cmd = [
         sys.executable,
         str(PROJECT_ROOT / "scripts" / "serve_web_viewer.py"),
@@ -108,14 +121,14 @@ def main():
     parser = argparse.ArgumentParser(description="Namma Space Master Pipeline Runner")
     parser.add_argument(
         "--stage", 
-        choices=["all", "extract", "convert", "qa", "serve"],
+        choices=["all", "extract", "reconstruct", "convert", "qa", "serve"],
         default="all",
         help="Pipeline stage to execute (default: all)"
     )
-    parser.add_argument("--video", type=str, default="sample_data/raw_videos/room.mp4", help="Path to input video")
-    parser.add_argument("--frames_dir", type=str, default="sample_data/extracted_frames", help="Output directory for frames")
-    parser.add_argument("--ply", type=str, help="Path to .ply file for conversion")
-    parser.add_argument("--splat", type=str, default="web_viewer/sample_room.splat", help="Output path for converted .splat")
+    parser.add_argument("--video", type=str, default="sample_data/raw_videos/video1.mp4", help="Path to input video")
+    parser.add_argument("--frames_dir", type=str, default="sample_data/extracted_frames_video1", help="Output directory for frames")
+    parser.add_argument("--ply", type=str, default="sample_data/scene_outputs/video1_reconstructed.ply", help="Path to .ply file for reconstruction/conversion")
+    parser.add_argument("--splat", type=str, default="web_viewer/video1_scene.splat", help="Output path for converted .splat")
     parser.add_argument("--port", type=int, default=8000, help="Web viewer port")
     parser.add_argument("--no-browser", action="store_true", help="Do not automatically launch browser")
     args = parser.parse_args()
@@ -126,15 +139,19 @@ def main():
 
     if args.stage == "extract":
         stage_extract(args.video, args.frames_dir)
+    elif args.stage == "reconstruct":
+        stage_reconstruct(args.frames_dir, args.ply)
     elif args.stage == "convert":
-        ply = args.ply or str(SPATIAL_DIR / "final_full_scene_package v10.5" / "scene_outputs" / "splat_raw_pruned_for_viewer.ply")
-        stage_convert(ply, args.splat)
+        stage_convert(args.ply, args.splat)
     elif args.stage == "qa":
         stage_qa()
     elif args.stage == "serve":
         stage_serve(port=args.port, no_browser=args.no_browser)
     elif args.stage == "all":
-        print("Executing full verified demonstration pipeline...")
+        print(f"Executing complete end-to-end pipeline on {args.video}...")
+        stage_extract(args.video, args.frames_dir)
+        stage_reconstruct(args.frames_dir, args.ply)
+        stage_convert(args.ply, args.splat)
         stage_qa()
         stage_serve(port=args.port, no_browser=args.no_browser)
 

@@ -772,9 +772,26 @@ function loadCustomFile(file) {
     }
 }
 
-function parseSplatBuffer(buffer) {
+let currentCustomCloud = null;
+
+function loadSplatFromUrl(url, sceneLabel) {
+    showToast(`Loading: ${sceneLabel}...`);
+    fetch(url)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.arrayBuffer();
+        })
+        .then(buffer => {
+            parseSplatBuffer(buffer, sceneLabel);
+        })
+        .catch(err => {
+            console.warn(`Could not fetch ${url}:`, err);
+        });
+}
+
+function parseSplatBuffer(buffer, label = 'custom splat') {
     const rowLength = 32;
-    const count = buffer.byteLength / rowLength;
+    const count = Math.floor(buffer.byteLength / rowLength);
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
 
@@ -799,15 +816,37 @@ function parseSplatBuffer(buffer) {
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const material = new THREE.PointsMaterial({
-        size: 0.035,
+        size: 0.045,
         vertexColors: true
     });
 
+    if (currentCustomCloud) {
+        sceneGroup.remove(currentCustomCloud);
+    }
     const customCloud = new THREE.Points(geometry, material);
+    currentCustomCloud = customCloud;
     sceneGroup.add(customCloud);
     state.splatCount = count;
     document.getElementById('tele-splats').textContent = count.toLocaleString();
-    showToast(`Rendered ${count.toLocaleString()} Gaussians from custom splat!`);
+    showToast(`Rendered ${count.toLocaleString()} Gaussians from ${label}!`);
+}
+
+// Scene selector
+const sceneSelect = document.getElementById('scene-select');
+if (sceneSelect) {
+    sceneSelect.addEventListener('change', (e) => {
+        if (e.target.value === 'video1') {
+            loadSplatFromUrl('video1_scene.splat', 'Reconstructed video1');
+        } else if (e.target.value === 'synthetic') {
+            if (currentCustomCloud) {
+                sceneGroup.remove(currentCustomCloud);
+                currentCustomCloud = null;
+            }
+            state.splatCount = 484707;
+            document.getElementById('tele-splats').textContent = '484,707';
+            showToast('Showing Digital Twin Scene');
+        }
+    });
 }
 
 // ============================================================
@@ -966,7 +1005,8 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Start loop
+// Start loop & load video1 reconstruction by default
 animate();
-showToast('Ready: Click to enter walkthrough or press WASD');
+loadSplatFromUrl('video1_scene.splat', 'Reconstructed video1');
+showToast('Ready: Roaming video1 space · WASD to walk, Tab to free cursor');
 
