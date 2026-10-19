@@ -50,16 +50,18 @@ def run_cmd(cmd, cwd=None):
     return res.returncode
 
 def stage_extract(video_path, output_dir, fps=3):
-    print_banner(f"Stage 1: Frame Extraction from {video_path}")
-    if not os.path.exists(video_path):
-        print(f"  [!] Error: Video file not found at {video_path}")
+    abs_video = Path(video_path).resolve()
+    abs_out = Path(output_dir).resolve()
+    print_banner(f"Stage 1: Frame Extraction from {abs_video}")
+    if not abs_video.exists():
+        print(f"  [!] Error: Video file not found at {abs_video}")
         return 1
     
     cmd = [
         sys.executable,
         "-m", "preprocess.extract_frames",
-        "--video", str(video_path),
-        "--output_dir", str(output_dir),
+        "--video", str(abs_video),
+        "--output_dir", str(abs_out),
         "--fps", str(fps)
     ]
     return run_cmd(cmd, cwd=SPATIAL_DIR)

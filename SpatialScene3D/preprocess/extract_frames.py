@@ -21,6 +21,13 @@ import json
 import os
 import subprocess
 import sys
+
+if hasattr(sys.stdout, "reconfigure") and sys.stdout.encoding.lower() != "utf-8":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple
@@ -77,11 +84,38 @@ def extract_frames_ffmpeg(
     ]
 
     print(f"    Running: {' '.join(cmd)}")
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    use_opencv = False
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"    ffmpeg error, falling back to OpenCV VideoCapture: {result.stderr[-200:]}")
+            use_opencv = True
+    except (FileNotFoundError, OSError):
+        print("    ffmpeg not found on PATH. Falling back to OpenCV VideoCapture...")
+        use_opencv = True
 
-    if result.returncode != 0:
-        print(f"    ffmpeg error:\n{result.stderr[-500:]}")
-        sys.exit(1)
+    if use_opencv:
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            print(f"    Error: Could not open video file {video_path}")
+            sys.exit(1)
+        video_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+        frame_interval = max(1, int(round(video_fps / fps)))
+        count = 0
+        frame_idx = 0
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            if count % frame_interval == 0:
+                frame_idx += 1
+                h, w = frame.shape[:2]
+                new_w = int(w * (height / h))
+                resized = cv2.resize(frame, (new_w, height), interpolation=cv2.INTER_AREA)
+                out_path = os.path.join(output_dir, f"{frame_idx:06d}.jpg")
+                cv2.imwrite(out_path, resized, [cv2.IMWRITE_JPEG_QUALITY, 95])
+            count += 1
+        cap.release()
 
     # Collect all extracted frames, sorted
     frames = sorted(

@@ -1,0 +1,37 @@
+{
+  "video_source": "C:\\Aniketh\\Coding\\NammaSpace\\sample_data\\raw_videos\\sample_test_room.mp4",
+  "frame_count": 6,
+  "processed_at": "2026-10-19T11:36:17.145084",
+  "frames": [
+    {
+      "index": 0,
+      "filename": "000001.jpg",
+      "path": "C:\\Aniketh\\Coding\\NammaSpace\\sample_data\\extracted_frames\\000001.jpg"
+    },
+    {
+      "index": 1,
+      "filename": "000002.jpg",
+      "path": "C:\\Aniketh\\Coding\\NammaSpace\\sample_data\\extracted_frames\\000002.jpg"
+    },
+    {
+      "index": 2,
+      "filename": "000003.jpg",
+      "path": "C:\\Aniketh\\Coding\\NammaSpace\\sample_data\\extracted_frames\\000003.jpg"
+    },
+    {
+      "index": 3,
+      "filename": "000004.jpg",
+      "path": "C:\\Aniketh\\Coding\\NammaSpace\\sample_data\\extracted_frames\\000004.jpg"
+    },
+    {
+      "index": 4,
+      "filename": "000005.jpg",
+      "path": "C:\\Aniketh\\Coding\\NammaSpace\\sample_data\\extracted_frames\\000005.jpg"
+    },
+    {
+      "index": 5,
+      "filename": "000006.jpg",
+      "path": "C:\\Aniketh\\Coding\\NammaSpace\\sample_data\\extracted_frames\\000006.jpg"
+    }
+  ]
+}
