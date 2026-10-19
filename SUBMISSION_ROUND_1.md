@@ -48,12 +48,12 @@ This automatically launches your default browser at:
 
 | Control | Action |
 |---|---|
-| **Click Canvas / Enter Button** | Engage Pointer Lock (locks mouse cursor for 360° pitch and yaw look) |
-| <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> | Walk forward, strafe left, walk backward, strafe right |
-| <kbd>Mouse</kbd> | Look around in first-person (360° rotation) |
+| <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> / Arrows | Walk around space (works at all times in both Free Cursor and Mouse Look modes) |
+| <kbd>Tab</kbd> or <kbd>Esc</kbd> | Toggle between **Free Cursor Mode** (change settings/drag-drop) and **Mouse Look Mode** |
+| <kbd>Mouse Left-Drag</kbd> | Look around with smooth pitch & yaw while keeping cursor free |
+| <kbd>Mouse Look</kbd> (when locked) | Seamless first-person 360° pitch and yaw look |
 | <kbd>Shift</kbd> | Sprint (1.8× speed multiplier) |
 | <kbd>Space</kbd> / <kbd>C</kbd> | Float up / crouch down (when collision height lock is toggled off) |
-| <kbd>Esc</kbd> | Release mouse cursor |
 
 ### 3.3 Interactive Viewer Features
 - **Render Shading Modes**:

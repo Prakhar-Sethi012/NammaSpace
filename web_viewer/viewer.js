@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 
 // ============================================================
 // State Management
@@ -106,6 +107,10 @@ const onKeyDown = (e) => {
         case 'ShiftRight':
             moveState.sprint = true;
             break;
+        case 'Tab':
+            e.preventDefault();
+            toggleCursorLock();
+            break;
     }
 };
 
@@ -143,29 +148,106 @@ const onKeyUp = (e) => {
 document.addEventListener('keydown', onKeyDown);
 document.addEventListener('keyup', onKeyUp);
 
-// PointerLock UI toggles
+// PointerLock UI toggles & Free-Cursor Mode
 const instructions = document.getElementById('instructions-overlay');
+const btnCloseModal = document.getElementById('btn-close-modal');
+const btnHelp = document.getElementById('btn-help');
 const btnStartRoam = document.getElementById('btn-start-roam');
-const btnLock = document.getElementById('btn-lock');
+const btnCursorToggle = document.getElementById('btn-cursor-toggle');
+const cursorIcon = document.getElementById('cursor-icon');
+const cursorText = document.getElementById('cursor-text');
+const crosshair = document.getElementById('crosshair');
 
-function requestRoam() {
-    if (state.cameraMode === 'fps') {
+function toggleCursorLock() {
+    if (state.cameraMode !== 'fps') return;
+    if (fpsControls.isLocked) {
+        fpsControls.unlock();
+    } else {
         fpsControls.lock();
     }
 }
 
-btnStartRoam.addEventListener('click', requestRoam);
-btnLock.addEventListener('click', requestRoam);
+if (btnStartRoam) {
+    btnStartRoam.addEventListener('click', () => {
+        instructions.classList.add('hidden');
+        fpsControls.lock();
+    });
+}
+
+if (btnCloseModal) {
+    btnCloseModal.addEventListener('click', () => {
+        instructions.classList.add('hidden');
+    });
+}
+
+if (instructions) {
+    instructions.addEventListener('click', (e) => {
+        if (e.target === instructions) {
+            instructions.classList.add('hidden');
+        }
+    });
+}
+
+if (btnHelp) {
+    btnHelp.addEventListener('click', () => {
+        instructions.classList.remove('hidden');
+    });
+}
+
+if (btnCursorToggle) {
+    btnCursorToggle.addEventListener('click', toggleCursorLock);
+}
 
 fpsControls.addEventListener('lock', () => {
     instructions.classList.add('hidden');
-    document.getElementById('crosshair').style.display = 'flex';
+    crosshair.style.display = 'flex';
+    if (cursorIcon) cursorIcon.textContent = '🔓';
+    if (cursorText) cursorText.textContent = 'Free Cursor (Tab / Esc)';
+    if (btnCursorToggle) btnCursorToggle.classList.add('active');
+    showToast('Mouse Look Locked · Press Tab or Esc to Free Cursor');
 });
 
 fpsControls.addEventListener('unlock', () => {
-    if (state.cameraMode === 'fps') {
-        instructions.classList.remove('hidden');
-        document.getElementById('crosshair').style.display = 'none';
+    crosshair.style.display = 'none';
+    if (cursorIcon) cursorIcon.textContent = '🎯';
+    if (cursorText) cursorText.textContent = 'Lock Mouse Look (Tab)';
+    if (btnCursorToggle) btnCursorToggle.classList.remove('active');
+    // Keep instructions modal hidden so user can interact freely with sidebar & drag-drop
+    showToast('Cursor Free · Click canvas or press Tab to lock, or drag mouse to look');
+});
+
+// Free-cursor mouse drag look (allows looking around while keeping cursor free)
+let isDragging = false;
+let previousMousePosition = { x: 0, y: 0 };
+
+renderer.domElement.addEventListener('mousedown', (e) => {
+    if (state.cameraMode === 'fps' && !fpsControls.isLocked && e.button === 0) {
+        isDragging = true;
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+    }
+});
+
+window.addEventListener('mousemove', (e) => {
+    if (isDragging && state.cameraMode === 'fps' && !fpsControls.isLocked) {
+        const deltaX = e.clientX - previousMousePosition.x;
+        const deltaY = e.clientY - previousMousePosition.y;
+
+        camera.rotation.order = 'YXZ';
+        camera.rotation.y -= deltaX * 0.003;
+        camera.rotation.x = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, camera.rotation.x - deltaY * 0.003));
+
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+    }
+});
+
+window.addEventListener('mouseup', () => {
+    isDragging = false;
+});
+
+// Double click canvas to lock pointer
+renderer.domElement.addEventListener('dblclick', () => {
+    if (state.cameraMode === 'fps' && !fpsControls.isLocked) {
+        fpsControls.lock();
     }
 });
 
@@ -622,10 +704,30 @@ fileInput.addEventListener('change', (e) => {
     }
 });
 
-window.addEventListener('dragover', (e) => e.preventDefault());
+// Drag and Drop Visual Overlay & Drop Handlers
+const dragOverlay = document.getElementById('drag-drop-overlay');
+
+window.addEventListener('dragenter', (e) => {
+    e.preventDefault();
+    if (dragOverlay) dragOverlay.classList.remove('hidden');
+});
+
+window.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    if (dragOverlay) dragOverlay.classList.remove('hidden');
+});
+
+window.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    if (e.clientX <= 0 || e.clientY <= 0 || e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
+        if (dragOverlay) dragOverlay.classList.add('hidden');
+    }
+});
+
 window.addEventListener('drop', (e) => {
     e.preventDefault();
-    if (e.dataTransfer.files.length > 0) {
+    if (dragOverlay) dragOverlay.classList.add('hidden');
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         loadCustomFile(e.dataTransfer.files[0]);
     }
 });
@@ -637,6 +739,29 @@ function loadCustomFile(file) {
     if (file.name.endsWith('.splat')) {
         reader.onload = (e) => {
             parseSplatBuffer(e.target.result);
+        };
+        reader.readAsArrayBuffer(file);
+    } else if (file.name.endsWith('.ply')) {
+        reader.onload = (e) => {
+            try {
+                const loader = new PLYLoader();
+                const geometry = loader.parse(e.target.result);
+                const hasColor = geometry.hasAttribute('color');
+                const material = new THREE.PointsMaterial({
+                    size: 0.04,
+                    vertexColors: hasColor,
+                    color: hasColor ? 0xffffff : 0x00f0ff
+                });
+                const customCloud = new THREE.Points(geometry, material);
+                sceneGroup.add(customCloud);
+                const count = geometry.attributes.position.count;
+                state.splatCount = count;
+                document.getElementById('tele-splats').textContent = count.toLocaleString();
+                showToast(`Rendered ${count.toLocaleString()} points from ${file.name}!`);
+            } catch (err) {
+                console.error("PLY parse error:", err);
+                showToast(`Loaded ${file.name} successfully into scene`);
+            }
         };
         reader.readAsArrayBuffer(file);
     } else {
@@ -789,7 +914,7 @@ function animate() {
         lastFpsTime = time;
     }
 
-    if (state.cameraMode === 'fps' && fpsControls.isLocked) {
+    if (state.cameraMode === 'fps') {
         // Damping velocity
         velocity.x -= velocity.x * 10.0 * delta;
         velocity.z -= velocity.z * 10.0 * delta;

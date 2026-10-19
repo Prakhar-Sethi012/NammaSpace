@@ -141,7 +141,19 @@ Serve and explore your reconstructed model:
 
 ```powershell
 python scripts/run_pipeline.py --stage serve
+# Or directly:
+python scripts/serve_web_viewer.py
 ```
+
+#### 🎮 Interactive Viewer Controls:
+- **`W` `A` `S` `D` / Arrows**: Walk around smoothly (works continuously in both Free Cursor and Locked Mouse Look modes).
+- **`Tab` or `Esc`**: Instantly toggle between **Free Cursor Mode** (interact with UI panels, adjust sliders, jump to POIs, or drag & drop files) and **FPS Mouse Look Mode** (pointer-locked first-person view).
+- **Mouse Left-Click & Drag**: Look around the scene with precision while remaining in Free Cursor mode.
+- **`Shift`**: Sprint ($1.8\times$ traversal speed).
+- **`Space` / `C`**: Ascend / crouch.
+- **Drag & Drop Models**: Drag and drop any `.splat` or `.ply` point cloud file anywhere onto the browser window for real-time visualization.
+- **Shading Modes**: Switch between Photoreal RGB, 3D Semantics, and Depth in the left HUD.
+- **POI Quick-Jump**: Teleport directly to Main Entrance, Reception Counter, Executive Desk, Meeting Room A, or Sofa Lounge.
 
 ---
 

@@ -587,13 +587,100 @@ kbd {
     border-radius: var(--radius-sm);
     font-size: 13px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    z-index: 200;
-    opacity: 1;
-    transition: opacity 0.3s;
+    z-index: 1000;
 }
 
-.toast.hidden {
-    opacity: 0;
+/* Close button for modals */
+.instructions-card {
+    position: relative;
+}
+
+.btn-close {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.btn-close:hover {
+    color: #ffffff;
+}
+
+.btn-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--bg-surface-border);
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: var(--accent);
+    color: #ffffff;
+}
+
+/* Drag & Drop Visual Feedback */
+.drag-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10, 12, 16, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
     pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.drag-overlay.hidden {
+    display: none;
+    opacity: 0;
+}
+
+.drag-overlay-box {
+    border: 2px dashed var(--accent);
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: var(--radius-lg);
+    padding: 50px 80px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 0 50px var(--accent-glow);
+}
+
+.drag-overlay-box svg {
+    color: var(--accent);
+}
+
+.drag-overlay-box h3 {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.drag-overlay-box p {
+    font-size: 13px;
+    color: var(--text-secondary);
 }
 

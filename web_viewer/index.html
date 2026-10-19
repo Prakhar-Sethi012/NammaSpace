@@ -47,10 +47,12 @@
             </button>
             <input type="file" id="file-input" accept=".splat,.ply" style="display: none;">
 
-            <button id="btn-lock" class="btn-primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                Enter Walkthrough (WASD)
+            <button id="btn-cursor-toggle" class="btn-primary" title="Toggle between Mouse Look (Locked) and Free Cursor (to change settings/drag-drop)">
+                <span id="cursor-icon">🎯</span>
+                <span id="cursor-text">Lock Mouse Look (Tab)</span>
             </button>
+
+            <button id="btn-help" class="btn-icon" title="View Keybinds & Help">?</button>
         </div>
     </header>
 
@@ -142,22 +144,32 @@
         <canvas id="minimap-canvas" width="160" height="160"></canvas>
     </div>
 
-    <!-- On-Screen Instructions Overlay when Pointer Lock is not active -->
+    <!-- Drag and Drop Visual Feedback Overlay -->
+    <div id="drag-drop-overlay" class="drag-overlay hidden">
+        <div class="drag-overlay-box">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <h3>Drop .splat or .ply model here</h3>
+            <p>Release to load into the 3D digital twin</p>
+        </div>
+    </div>
+
+    <!-- On-Screen Instructions Modal -->
     <div id="instructions-overlay">
         <div class="instructions-card">
+            <button id="btn-close-modal" class="btn-close" title="Close Help">&times;</button>
             <div class="card-icon">🎮</div>
             <h2>Interactive 3D Walkthrough</h2>
             <p>Experience fluid first-person roaming in the reconstructed digital twin.</p>
             
             <div class="controls-guide">
                 <div class="guide-item"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> <span>Walk around the space</span></div>
-                <div class="guide-item"><kbd>Mouse</kbd> <span>Look around (360° pitch & yaw)</span></div>
+                <div class="guide-item"><kbd>Tab</kbd> / <kbd>Esc</kbd> <span>Toggle Free Cursor (to change settings or drag-drop)</span></div>
+                <div class="guide-item"><kbd>Mouse</kbd> <span>Look around (or Left-Click & Drag when cursor is free)</span></div>
                 <div class="guide-item"><kbd>Shift</kbd> <span>Sprint / Fast traversal</span></div>
                 <div class="guide-item"><kbd>Space</kbd> / <kbd>C</kbd> <span>Fly up / crouch</span></div>
-                <div class="guide-item"><kbd>Esc</kbd> <span>Unlock mouse cursor</span></div>
             </div>
 
-            <button id="btn-start-roam" class="btn-start">Click to Enter Walkthrough</button>
+            <button id="btn-start-roam" class="btn-start">Enter Walkthrough</button>
             <p class="drop-hint">💡 Drag & drop any <code>.splat</code> or <code>.ply</code> file directly into this window to visualize custom captures.</p>
         </div>
     </div>
